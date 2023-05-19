@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - app_network
+  
+  app:
+    build:
+      context: ./app
+    volumes:
+      - ./app:/usr/src/app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+    networks:
+      - app_network
+
+  web:
+    build:
+      context: ./web
+    volumes:
+      - ./web:/usr/src/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - app
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
